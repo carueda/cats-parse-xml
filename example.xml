@@ -1,0 +1,6 @@
+<Foo a="A">
+  <Baz>
+    <Qux>1</Qux>
+    <!-- hi -->
+  </Baz>
+</Foo>

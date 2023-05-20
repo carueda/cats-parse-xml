@@ -15,14 +15,14 @@ object XmlParser:
   }
 
   private val letter: P[Char] = P.ignoreCaseCharIn('a' to 'z')
-  private val letterExtended: P[Char] = letter | P.charWhere("_:".contains(_))
+  private val letterExtended: P[Char] = letter | P.charWhere("_:.-".contains(_))
   private val digit: P[Char] = Numbers.digit
 
   private val identifier: P[String] =
     (letter ~ (letterExtended | digit).rep0).string.withContext("identifier")
 
   private val simpleQuotedString: P[String] =
-    (P.char('"') *> P.charsWhile(_ != '"') <* P.char('"'))
+    (P.char('"') *> P.charsWhile(_ != '"').string.rep0.string <* P.char('"'))
       .withContext("simpleQuotedString")
 
   private val attributeValue: P[(String, String)] =
@@ -43,8 +43,16 @@ object XmlParser:
     xmlNode map Segment.Node.apply
   }
 
+  private val cdata: P[String] =
+    val notClose = P.not(P.string("]]>"))
+    P.string("<![CDATA[") *>
+      (notClose.backtrack.with1 *> P.anyChar).rep0.string <*
+      P.string("]]>")
+
+  private val cdataSegment: P[Segment] = cdata.map(Segment.CData.apply)
+
   private val segment: P[Segment] =
-    textSegment | commentSegment | nodeSegment
+    textSegment | commentSegment | cdataSegment | nodeSegment
 
   private type Pre = (String, List[(String, String)])
 
@@ -89,7 +97,7 @@ object XmlParser:
     // in this example, surrounding spaces are ignored for each comment at file level
     val c: P[String] = spaces0.with1 *> (comment <* spaces0)
 
-    (xmlFileHeader.?.with1 ~ (c.rep0.with1 ~ xmlNode ~ c.rep0)).map {
-      case (header, ((preComments, xmlNode), postComments)) =>
+    (xmlFileHeader.?.with1 ~ (c.rep0.with1 ~ xmlNode ~ (spaces0 *> c.rep0)))
+      .map { case (header, ((preComments, xmlNode), postComments)) =>
         XmlDoc(header, preComments, xmlNode, postComments)
-    }
+      }

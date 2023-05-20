@@ -6,12 +6,16 @@ A simple [cats-parse](https://github.com/typelevel/cats-parse) based XML parser.
   - a top-level `XmlDoc` object, which captures an optional header string (`<?xml ... >`),
     and a `XmlNode` possibly surrounded by comments.
   - `XmlNode` has a name, a set of attributes, and a list of child segments.
-  - There are three kinds of segments: `Node(XmlNode)`, `Text(String)`, and `Comment(String)`.
+  - There are four kinds of segments:
+    `Node(XmlNode)`, `Text(String)`, `Comment(String)`, and `CData(String)`.
 - [`parser.scala`](parser.scala) defines
    the top-level parser `xmlDoc` (which generates `XmlDoc`),
    and various supporting parsers.
 - [`some.test.scala`](some.test.scala) defines various tests.
-- [`main.sc`](main.sc) defines a simple command-line program that parses a given file.
+- [`main.sc`](main.sc) defines a simple command-line program that
+  parses a given file or all xml files under a given directory.
+
+## tests
 
 ```shell
 scala-cli test .
@@ -42,57 +46,59 @@ Tests: succeeded 12, failed 0, canceled 0, ignored 0, pending 0
 All tests passed.
 ```
 
+## program
+
 ```shell
-scala-cli run . -- example.xml
+scala-cli run . -- --file example.xml --showAst
 ```
 ```
-Right(
-  value = XmlDoc(
-    header = None,
-    preComments = List(),
-    xmlNode = XmlNode(
-      tagName = "Foo",
-      attributes = Map("a" -> "A"),
-      segments = List(
-        Text(
-          text = """
+XmlDoc(
+  header = None,
+  preComments = List(),
+  xmlNode = XmlNode(
+    tagName = "Foo",
+    attributes = Map("a" -> "A"),
+    segments = List(
+      Text(
+        text = """
   """
-        ),
-        Node(
-          node = XmlNode(
-            tagName = "Baz",
-            attributes = Map(),
-            segments = List(
-              Text(
-                text = """
+      ),
+      Node(
+        node = XmlNode(
+          tagName = "Baz",
+          attributes = Map(),
+          segments = List(
+            Text(
+              text = """
     """
-              ),
-              Node(
-                node = XmlNode(
-                  tagName = "Qux",
-                  attributes = Map(),
-                  segments = List(Text(text = "1"))
-                )
-              ),
-              Text(
-                text = """
-    """
-              ),
-              Comment(comment = " hi "),
-              Text(
-                text = """
+            ),
+            Comment(comment = " hi "),
+            Text(
+              text = """
   """
-              )
             )
           )
-        ),
-        Text(
-          text = """
-"""
         )
+      ),
+      Text(
+        text = """
+  """
+      ),
+      CData(text = "x<y> z"),
+      Text(
+        text = """
+"""
       )
-    ),
-    postComments = List()
-  )
+    )
+  ),
+  postComments = List()
 )
+```
+
+```shell
+scala-cli run . -- --dir .
+```
+```
+Successes: 1
+ Failures: 0
 ```

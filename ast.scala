@@ -17,3 +17,4 @@ enum Segment:
   case Node(node: XmlNode)
   case Comment(comment: String)
   case Text(text: String)
+  case CData(text: String)

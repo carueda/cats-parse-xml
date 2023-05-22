@@ -51,7 +51,7 @@ All tests passed.
 ```shell
 scala-cli run . -- --file example.xml --showAst
 ```
-```
+```scala
 XmlDoc(
   header = None,
   preComments = List(),

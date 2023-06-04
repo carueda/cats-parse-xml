@@ -12,7 +12,7 @@ A simple [cats-parse](https://github.com/typelevel/cats-parse) based XML parser.
    the top-level parser `xmlDoc` (which generates `XmlDoc`),
    and various supporting parsers.
 - [`some.test.scala`](some.test.scala) defines various tests.
-- [`main.sc`](main.sc) defines a simple command-line program that
+- [`main.scala`](main.scala) defines a simple command-line program that
   parses a given file or all xml files under a given directory.
 
 ## tests
